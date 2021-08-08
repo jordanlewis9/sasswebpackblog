@@ -1,0 +1,15 @@
+.front {
+  color: blue;
+
+  &__side {
+    color: pink;
+  }
+
+  &__below {
+    color: red;
+
+    &--side {
+      color: green;
+    }
+  }
+}
