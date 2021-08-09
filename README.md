@@ -4,7 +4,7 @@ Somewhere in your normal "projects" folder, go ahead and make a new directory. G
 <br/><br/>
 
 ```
-touch index.html index.js main.css
+touch index.html index.js main.scss
 ```
 
 <br/><br/>
@@ -31,7 +31,7 @@ npm install --save-dev webpack webpack-cli webpack-dev-server html-webpack-plugi
 
 <br/><br/>
 
-In the event that you don't know what the above packages are, Webpack is a file bundler that bundles all of our front-end code into a couple of large files. This reduces the amount of files that the browser needs to download in order to get our site up and running. Webpack-cli is the command line interface that allows us to run webpack commands. Webpack-dev-server sets up a live preview (with a bit of configuration) of our site when we're in development. What good is setting up a CSS preprocessor if we can't instantly see our changes? HTML-webpack-plugin will automatically inject our JS and CSS files into a template HTML page.
+In the event that you don't know what the above packages are, Webpack is a file bundler that bundles all of our front-end code into a couple of large files. This reduces the amount of files that the browser needs to download in order to get our site up and running. Webpack-cli is the command line interface that allows us to run webpack commands. [Webpack-dev-server](https://github.com/webpack/webpack-dev-server) sets up a live preview (with a bit of configuration) of our site when we're in development. What good is setting up a CSS preprocessor if we can't instantly see our changes? [HTML-webpack-plugin](https://github.com/jantimon/html-webpack-plugin) will automatically inject our JS and CSS files into a template HTML page.
 <br/><br/>
 
 Once that is finished installing, create a new file in the root directory called "webpack.config.js". Inside this file, we're going to set up a barebones development environment. Don't worry if you're intimidated by the code below - I'm going to explain every line.
@@ -94,5 +94,93 @@ Whew, that was a lot! But we're far from over! Now we need to go to our package.
 ```
 
 <br/><br/>
+The first script, "dev:build", will tell Webpack to go ahead and build the bundle. When we first run this, you'll notice a new folder in the root directory - dist - and in it two files, index.html and main.bundle.js. Interestingly, if you open index.html and review it's contents, you'll notice the following line injected into the head of the file:
+<br/><br/>
 
-/// EXCLUDE NODE MODULES!!!
+```
+<script defer src="main.bundle.js"></script>
+```
+
+<br/><br/>
+
+That's right - HTML-webpack-plugin automatically injected a script tag with our relatively empty JS build, main.bundle.js. Let's now go ahead and run the "dev:serve" script. After a few seconds, a new window in your default browser should open up, and with it, our single line of "THIS IS NOT SEMANTIC BUT THIS POST ISN'T ABOUT SEMANTICS".
+<br/><br/>
+
+While neat that we made it this far, we haven't yet gotten to the point where we can write our CSS in SASS. Let's go ahead and do that, because this page is quite ugly. In our terminal, we're going to install a few more packages:
+<br/><br/>
+
+```
+npm install --save-dev node-sass style-loader css-loader sass-loader
+```
+
+<br/><br/>
+
+[Node-sass](https://www.npmjs.com/package/node-sass) is a necessary dependent for sass-loader. It is deprecated, as of the writing of this post, still has 4.5 million weekly downloads. While I would love to tell you what the other three packages do, it's much easier for us to write the configuration necessary in webpack.config.js, then explain what it does. With that being said, in our webpack.config.js file, add the following lines at the end of the configuration object:
+<br/><br/>
+
+```
+  module: {
+    rules: [
+      {
+        test: /\.scss$/,
+        use: [
+          "style-loader",
+          "css-loader",
+          "sass-loader"
+        ]
+      }
+    ]
+  }
+```
+
+<br/><br/>
+
+First off, don't forget to add a comma at the end of the plugins array! This module configuration option tells webpack to use specific tools or loaders that we define on files that we also define. Rules are an array of rules webpack should follow for the given files. Inside of rules, we have two configuration options for the first rule:
+<br/><br/>
+
+- test allows us to enter a regex (yay!) that webpack will use to comb through the files and match up. Only if webpack finds files that match the regex will webpack then run the tools listed in "use".
+- use is an array of tools or loaders that webpack should use on files that match the regex. Webpack uses the tools in reverse of the order they appear in the array! In our array, webpack is using "sass-loader" first.
+- sass-loader takes the scss files that it encounters and turns it into CSS.
+- css-loader takes the CSS, and turns it into CommonJS.
+- style-loader takes the CommonJS and injects it as styles into the HTML.
+  <br/><br/>
+
+If you noted previously, our entry point for webpack is "./index.js". To enable our SASS to be processed by webpack, we need to import our main.scss file into index.js, like so:
+<br/><br/>
+
+```
+import "./main.scss";
+```
+
+<br/><br/>
+
+Alright, we're now ready to write some SASS! This isn't going to be anything elaborate. We're simply nesting selectors, a SASS feature, to make sure we have everything set up correctly. In our main.scss file, type in the following code:
+<br/><br/>
+
+```
+.div {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: purple;
+
+  &__inner {
+    width: 50%;
+    height: 50vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: yellow;
+
+    &--text {
+      color: pink;
+    }
+  }
+}
+```
+
+<br/><br/>
+
+This should create a screen-wide purple box, an inner, centered yellow box, and centered pink text inside the yellow box. If so, congratulations, you now have SASS set up, along with a hot reloading dev server! Pat yourself on the back, you deserve it. If you'd like to view the entire code that I used for this post, you can find it here at my [Github](https://github.com/jordanlewis9/sasswebpackblog) account. Thanks for reading!

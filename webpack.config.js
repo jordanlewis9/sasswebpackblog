@@ -20,8 +20,12 @@ const config = {
   module: {
     rules: [
       {
-        test: /\.js$/,
-        exclude: /(node_modules)/
+        test: /\.scss$/,
+        use: [
+          "style-loader",
+          "css-loader",
+          "sass-loader"
+        ]
       }
     ]
   }
